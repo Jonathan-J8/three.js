@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - postprocessing - globalrays</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+
+	<body>
+		<div id="info">
+			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl globalrays example 
+		</div>
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+
+			import Stats from 'three/addons/libs/stats.module.js';
+
+			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+			import { GlobalRaysPass } from 'three/addons/postprocessing/GlobalRaysPass.js';
+			import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+			import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+
+			let container, stats;
+			let camera, scene, renderer, composer, directionalLight;
+
+			let sphereMesh;
+
+			const orbitRadius = 200;
+
+
+			init();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera.position.z = 200;
+
+				scene = new THREE.Scene();
+
+				directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+
+				scene.add( directionalLight );
+
+				// tree
+
+				const loader = new OBJLoader();
+				loader.load( 'models/obj/tree.obj', function ( object ) {
+
+					object.position.set( 0, - 150, - 150 );
+					object.scale.multiplyScalar( 400 );
+					scene.add( object );
+
+				} );
+
+				// sphere
+
+				const geo = new THREE.SphereGeometry( 1, 20, 10 );
+				sphereMesh = new THREE.Mesh( geo, new THREE.MeshBasicMaterial( { color: 0x000000 } ) );
+				sphereMesh.scale.multiplyScalar( 20 );
+				scene.add( sphereMesh );
+
+				//
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setClearColor( 0xffffff );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setAnimationLoop( render );
+				container.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = 50;
+				controls.maxDistance = 500;
+
+
+				composer = new EffectComposer( renderer );
+
+				const renderPass = new RenderPass( scene, camera );
+				composer.addPass( renderPass );
+
+				const globalRaysPass = new GlobalRaysPass();
+				composer.addPass( globalRaysPass );
+
+				const outputPass = new OutputPass();
+				composer.addPass( outputPass );
+
+				//
+
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			//
+
+			function onWindowResize() {
+
+				const renderTargetWidth = window.innerWidth;
+				const renderTargetHeight = window.innerHeight;
+
+				camera.aspect = renderTargetWidth / renderTargetHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( renderTargetWidth, renderTargetHeight );
+			
+
+			}
+			
+			//
+			
+			function render() {
+
+				stats.begin();
+				const time = Date.now() / 4000;
+
+				sphereMesh.position.x = orbitRadius * Math.cos( time );
+				sphereMesh.position.z = orbitRadius * Math.sin( time ) - 100;
+
+				composer.render();
+				stats.end();
+
+			}
+
+		</script>
+	</body>
+</html>
