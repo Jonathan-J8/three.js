@@ -87,6 +87,7 @@
 	"webgl_postprocessing_dof": [ "bokeh" ],
 	"webgl_postprocessing_dof2": [ "bokeh" ],
 	"webgl_postprocessing_fxaa": [ "msaa", "multisampled" ],
+	"webgl_postprocessing_globalrays": [ "light scattering" ],
 	"webgl_postprocessing_godrays": [ "light scattering" ],
 	"webgl_postprocessing_gtao": [ "ambient occlusion" ],
 	"webgl_postprocessing_material_ao": [ "ambient occlusion" ],
