@@ -3,12 +3,20 @@
 		<title>three.js webgpu - animation retargeting</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
+		<link type="text/css" rel="stylesheet" href="example.css">
 	</head>
 	<body>
 
 		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgpu - animation retargeting
+			<a href="https://threejs.org/" target="_blank" rel="noopener" class="logo-link"></a>
+
+			<div class="title-wrapper">
+				<a href="https://threejs.org/" target="_blank" rel="noopener">three.js</a><span>Animation Retargeting</span>
+			</div>
+
+			<small>
+				Basic Animation Retargeting demo.
+			</small>
 		</div>
 
 		<script type="importmap">
@@ -24,14 +32,12 @@
 
 		<script type="module">
 
-			import * as THREE from 'three';
-			import { color, screenUV, hue, reflector, time, Fn, vec2, length, atan2, float, sin, cos, vec3, sub, mul, pow, blendDodge, normalWorld } from 'three/tsl';
-
-			import Stats from 'three/addons/libs/stats.module.js';
+			import * as THREE from 'three/webgpu';
+			import { color, screenUV, hue, reflector, time, Fn, vec2, length, atan, float, sin, cos, vec3, sub, mul, pow, blendDodge, normalWorldGeometry } from 'three/tsl';
 
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-			import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+			import { Inspector } from 'three/addons/inspector/Inspector.js';
 
 			import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
 
@@ -55,15 +61,12 @@
 
 			const clock = new THREE.Clock();
 
-			const stats = new Stats();
-			document.body.appendChild( stats.dom );
-
 			export const lightSpeed = /*#__PURE__*/ Fn( ( [ suv_immutable ] ) => {
 
 				// forked from https://www.shadertoy.com/view/7ly3D1
 
 				const suv = vec2( suv_immutable );
-				const uv = vec2( length( suv ), atan2( suv.y, suv.x ) );
+				const uv = vec2( length( suv ), atan( suv.y, suv.x ) );
 				const offset = float( float( .1 ).mul( sin( uv.y.mul( 10. ).sub( time.mul( .6 ) ) ) ).mul( cos( uv.y.mul( 48. ).add( time.mul( .3 ) ) ) ).mul( cos( uv.y.mul( 3.7 ).add( time ) ) ) );
 				const rays = vec3( vec3( sin( uv.y.mul( 150. ).add( time ) ).mul( .5 ).add( .5 ) ).mul( vec3( sin( uv.y.mul( 80. ).sub( time.mul( 0.6 ) ) ).mul( .5 ).add( .5 ) ) ).mul( vec3( sin( uv.y.mul( 45. ).add( time.mul( 0.8 ) ) ).mul( .5 ).add( .5 ) ) ).mul( vec3( sub( 1., cos( uv.y.add( mul( 22., time ).sub( pow( uv.x.add( offset ), .3 ).mul( 60. ) ) ) ) ) ) ).mul( vec3( uv.x.mul( 2. ) ) ) );
 
@@ -84,8 +87,8 @@
 			// background
 
 			const coloredVignette = screenUV.distance( .5 ).mix( hue( color( 0x0175ad ), time.mul( .1 ) ), hue( color( 0x02274f ), time.mul( .5 ) ) );
-			const lightSpeedEffect = lightSpeed( normalWorld ).clamp();
-			const lightSpeedSky = normalWorld.y.remapClamp( -.1, 1 ).mix( 0, lightSpeedEffect );
+			const lightSpeedEffect = lightSpeed( normalWorldGeometry ).clamp();
+			const lightSpeedSky = normalWorldGeometry.y.remapClamp( - .1, 1 ).mix( 0, lightSpeedEffect );
 			const composedBackground = blendDodge( coloredVignette, lightSpeedSky );
 
 			scene.backgroundNode = composedBackground;
@@ -145,10 +148,11 @@
 
 			// renderer
 			const renderer = new THREE.WebGPURenderer( { antialias: true } );
-			renderer.toneMapping = THREE.NeutralToneMapping;
-			renderer.setAnimationLoop( animate );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setAnimationLoop( animate );
+			renderer.toneMapping = THREE.NeutralToneMapping;
+			renderer.inspector = new Inspector();
 			document.body.appendChild( renderer.domElement );
 
 			const controls = new OrbitControls( camera, renderer.domElement );
@@ -157,14 +161,14 @@
 			controls.target.set( 0, 1, 0 );
 			controls.maxPolarAngle = Math.PI / 2;
 
-			const gui = new GUI();
-			gui.add( helpers, 'visible' ).name( 'helpers' );
+			const gui = renderer.inspector.createParameters( 'Scene settings' );
+			gui.add( helpers, 'visible' ).name( 'show helpers' );
 
 			//
 
 			function getSource( sourceModel ) {
 
-				const clip = sourceModel.animations[ 0 ]
+				const clip = sourceModel.animations[ 0 ];
 
 				const helper = new THREE.SkeletonHelper( sourceModel.scene );
 				helpers.add( helper );
@@ -289,8 +293,6 @@
 				mixer.update( delta );
 
 				controls.update();
-
-				stats.update();
 
 				renderer.render( scene, camera );
 
