@@ -117,6 +117,18 @@
 							pointCloud.count = countOfPoints;
 							scene.add( pointCloud );
 
+							// Debug: Read back data after a delay to ensure compute has run
+							setTimeout( async () => {
+
+								const resultArray = new Float32Array( 
+									await renderer.getArrayBufferAsync( pointPositionArray.value ) 
+								);
+
+								console.log( 'JOEAT Point positions (first 10):', resultArray.slice( 0, 30 ) );
+								console.log( 'JOEAT Total points:', resultArray.length / 3 );
+
+							}, 2000 ); // Wait 2 seconds for initialization
+
 						}
 
 					} );

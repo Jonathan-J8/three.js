@@ -1,23 +1,23 @@
 import NodeUniformsGroup from '../../common/nodes/NodeUniformsGroup.js';
 
+import { NodeSampledCubeTexture, NodeSampledTexture, NodeSampledTexture3D } from '../../common/nodes/NodeSampledTexture.js';
 import NodeSampler from '../../common/nodes/NodeSampler.js';
-import { NodeSampledTexture, NodeSampledCubeTexture, NodeSampledTexture3D } from '../../common/nodes/NodeSampledTexture.js';
 
-import NodeUniformBuffer from '../../common/nodes/NodeUniformBuffer.js';
 import NodeStorageBuffer from '../../common/nodes/NodeStorageBuffer.js';
+import NodeUniformBuffer from '../../common/nodes/NodeUniformBuffer.js';
 
-import { NodeBuilder, CodeNode } from '../../../nodes/Nodes.js';
+import { CodeNode, NodeBuilder } from '../../../nodes/Nodes.js';
 
 import { getFormat } from '../utils/WebGPUTextureUtils.js';
 
-import WGSLNodeParser from './WGSLNodeParser.js';
 import { NodeAccess } from '../../../nodes/core/constants.js';
+import WGSLNodeParser from './WGSLNodeParser.js';
 
-import VarNode from '../../../nodes/core/VarNode.js';
 import ExpressionNode from '../../../nodes/code/ExpressionNode.js';
+import VarNode from '../../../nodes/core/VarNode.js';
 
-import { FloatType, RepeatWrapping, ClampToEdgeWrapping, MirroredRepeatWrapping, NearestFilter } from '../../../constants.js';
-import { warn, error } from '../../../utils.js';
+import { ClampToEdgeWrapping, FloatType, MirroredRepeatWrapping, NearestFilter, RepeatWrapping } from '../../../constants.js';
+import { error, warn } from '../../../utils.js';
 
 // GPUShaderStage is not defined in browsers not supporting WebGPU
 const GPUShaderStage = ( typeof self !== 'undefined' ) ? self.GPUShaderStage : { VERTEX: 1, FRAGMENT: 2, COMPUTE: 4 };
@@ -1926,6 +1926,8 @@ ${ flowData.code }
 
 			this.vertexShader = this._getWGSLVertexCode( shadersData.vertex );
 			this.fragmentShader = this._getWGSLFragmentCode( shadersData.fragment );
+			console.log( 'JOEAT WGSL Vertex Shader:', { shadersData, str: this.vertexShader } );
+			console.log( 'JOEAT WGSL Fragment Shader:', { shadersData, str: this.fragmentShader } );
 
 		} else {
 
@@ -1934,8 +1936,11 @@ ${ flowData.code }
 			const workgroupSize = this.object.workgroupSize;
 
 			this.computeShader = this._getWGSLComputeCode( shadersData.compute, workgroupSize );
+			console.log( 'JOEAT WGSL Compute Shader:', { shadersData, str: this.computeShader } );
 
 		}
+
+
 
 	}
 

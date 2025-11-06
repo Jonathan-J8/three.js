@@ -73373,6 +73373,8 @@ ${ flowData.code }
 
 			this.vertexShader = this._getWGSLVertexCode( shadersData.vertex );
 			this.fragmentShader = this._getWGSLFragmentCode( shadersData.fragment );
+			console.log( 'JOEAT WGSL Vertex Shader:', { shadersData, str: this.vertexShader } );
+			console.log( 'JOEAT WGSL Fragment Shader:', { shadersData, str: this.fragmentShader } );
 
 		} else {
 
@@ -73381,8 +73383,11 @@ ${ flowData.code }
 			const workgroupSize = this.object.workgroupSize;
 
 			this.computeShader = this._getWGSLComputeCode( shadersData.compute, workgroupSize );
+			console.log( 'JOEAT WGSL Compute Shader:', { shadersData, str: this.computeShader } );
 
 		}
+
+
 
 	}
 
